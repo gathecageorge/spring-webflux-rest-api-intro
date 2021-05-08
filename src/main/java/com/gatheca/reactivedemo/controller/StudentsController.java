@@ -7,6 +7,7 @@ import com.gatheca.reactivedemo.repository.StudentsRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -71,6 +72,7 @@ public class StudentsController {
     }
 
     @DeleteMapping("/students/{studentID}")
+    @Transactional
     Mono<ResponseEntity<GeneralResponse<Students>>> deleteStudent(@PathVariable Long studentID) {
         return studentsRepository.findById(studentID)
                 .switchIfEmpty(Mono.error(new Exception(String.format("Student with ID %d not found", studentID))))
