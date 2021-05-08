@@ -6,12 +6,16 @@ import com.gatheca.reactivedemo.repository.CourseWorkRepository;
 import com.gatheca.reactivedemo.repository.StudentsRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @AllArgsConstructor
@@ -24,6 +28,23 @@ public class StudentsController {
         return studentsRepository.findById(studentID).map(student -> {
             return new ResponseEntity<>(student, HttpStatus.OK);
         });
+    }
+
+    @GetMapping(value = "/students", produces = MediaType.APPLICATION_STREAM_JSON_VALUE)
+    Flux<Students> getStudents(
+            @RequestParam(value = "page", defaultValue = "1") Integer page,
+            @RequestParam(value = "size", defaultValue = "10") Long limit,
+            @RequestParam Map<String, String> filterParams
+    ) {
+        String status = filterParams.getOrDefault("status", null);
+        String name = filterParams.getOrDefault("name", null);
+        if (name != null) {
+            name = "%" + name + "%";
+        }
+
+        long offset = (page - 1) * limit;
+
+        return studentsRepository.findAllByStatusAndName(offset, limit, status, name).delayElements(Duration.ofSeconds(2L));
     }
 
     @PostMapping("/students")
