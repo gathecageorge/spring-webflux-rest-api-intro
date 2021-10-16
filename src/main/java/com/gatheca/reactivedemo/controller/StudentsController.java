@@ -137,7 +137,7 @@ public class StudentsController {
                 .build();
     }
 
-    @GetMapping("/students/course/{studentID}/{courseID}")
+    @GetMapping("/students/chain-course/{studentID}/{courseID}")
     Mono<CourseWork> addNewCourseChain(@PathVariable Long studentID, @PathVariable Long courseID) {
         return studentsRepository.findById(studentID)
                 .flatMap(students -> {
