@@ -24,6 +24,9 @@ public class Students {
     @Column("registered_on")
     private Long registeredOn;
 
+    @Column("updated_on")
+    private Long updated_on;
+
     @Column("status")
     private Integer status;
 }

@@ -1,6 +1,7 @@
 package com.gatheca.reactivedemo.controller;
 
 import com.gatheca.reactivedemo.dto.GeneralResponse;
+import com.gatheca.reactivedemo.model.CourseWork;
 import com.gatheca.reactivedemo.model.Students;
 import com.gatheca.reactivedemo.repository.CourseWorkRepository;
 import com.gatheca.reactivedemo.repository.StudentsRepository;
@@ -125,6 +126,43 @@ public class StudentsController {
                                     HttpStatus.NOT_FOUND
                             )
                     );
+                });
+    }
+
+    private CourseWork getCoursework(Long studentID, Long courseID) {
+        return CourseWork.builder()
+                .courseID(courseID)
+                .marks(20)
+                .studentID(studentID)
+                .build();
+    }
+
+    @GetMapping("/students/course/{studentID}/{courseID}")
+    Mono<CourseWork> addNewCourseChain(@PathVariable Long studentID, @PathVariable Long courseID) {
+        return studentsRepository.findById(studentID)
+                .flatMap(students -> {
+                    //Update student details
+                    students.setUpdated_on(System.currentTimeMillis());
+                    return studentsRepository.save(students)
+                            .flatMap(updatedStudent -> {
+                                //Create a new course for student
+                                CourseWork courseWork = getCoursework(updatedStudent.getId(), courseID);
+                                return courseWorkRepository.save(courseWork);
+                            });
+                });
+    }
+
+    @GetMapping("/students/course/{studentID}/{courseID}")
+    Mono<CourseWork> addNewCourseNoChain(Long studentID, @PathVariable Long courseID) {
+        return studentsRepository.findById(studentID)
+                .flatMap(students -> {
+                    //Update student details
+                    students.setUpdated_on(System.currentTimeMillis());
+                    return studentsRepository.save(students);
+                }).flatMap(updatedStudent -> {
+                    //Create a new course for student
+                    CourseWork courseWork = getCoursework(updatedStudent.getId(), courseID);
+                    return courseWorkRepository.save(courseWork);
                 });
     }
 }
